@@ -1,0 +1,10 @@
+[package]
+name = "flv-parser"
+version = "0.1.0"
+edition="2018"
+authors =["Shell asypost@gmail.com"]
+license ="GPL 3.0"
+
+[dependencies]
+byteorder = "1"
+amf = "0.4"

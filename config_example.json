@@ -1,0 +1,55 @@
+{
+    "default": {
+        "global": [
+            "-re",
+            "-nostdin"
+        ],
+        "output": [
+            "-c:v",
+            "copy",
+            "-c:a",
+            "aac",
+            "-q:a",
+            "3",
+            "-loglevel",
+            "quiet",
+            "-f",
+            "flv",
+            "-ar",
+            "22050",
+            "-crf",
+            "50",
+            "-r",
+            "15"
+        ]
+    },
+    "rtsp": {
+        "global": [
+            "-nostdin"
+        ],
+        "input": [
+            "-max_delay",
+            "500000",
+            "-rtsp_flags",
+            "prefer_tcp"
+        ],
+        "output": [
+            "-c:v",
+            "copy",
+            "-c:a",
+            "aac",
+            "-q:a",
+            "3",
+            "-loglevel",
+            "quiet",
+            "-f",
+            "flv",
+            "-ar",
+            "22050",
+            "-crf",
+            "50",
+            "-r",
+            "15"
+        ]
+    }
+}
