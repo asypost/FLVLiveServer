@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "amf"
-version = "0.4.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d0557615d5ac2fbbb32cbcc14aebccf8e3628b2e5ed089101b3acdd65d312dd"
+checksum = "2c62d4a2b90719990d520439caec08f57b1b2c9243c04f1c9fb4f04519979aed"
 dependencies = [
  "byteorder",
 ]
