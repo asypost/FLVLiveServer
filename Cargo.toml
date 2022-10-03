@@ -23,7 +23,7 @@ path = "bin/http-flv-server.rs"
 
 [dependencies]
 bytes = "1.2"
-clap = "3.2"
+clap = "4.0"
 flv-remuxer = {path = "flv-remuxer"}
 futures = "0.3"
 futures-util = "0.3"
