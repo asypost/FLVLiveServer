@@ -1,4 +1,4 @@
-use clap::{Arg, Command};
+use clap::{Arg, Command, ArgAction,value_parser};
 use flv_remuxer::{RemuxManager, TranscoderOptions};
 use hyper::server::conn::AddrStream;
 use hyper::service::{make_service_fn, service_fn};
@@ -47,44 +47,48 @@ async fn main() {
                 .long("host")
                 .default_value("0.0.0.0")
                 .help("server bind address")
-                .takes_value(true),
+                .action(ArgAction::Set),
         )
         .arg(
             Arg::new("port")
                 .short('p')
                 .long("port")
                 .default_value("1987")
+                .value_parser(value_parser!(u32))
                 .help("server bind port")
-                .takes_value(true),
+                .action(ArgAction::Set),
         )
         .arg(
             Arg::new("timeout")
                 .help("transmuxer timeout in seconds")
                 .short('t')
                 .long("timeout")
+                .value_parser(value_parser!(u64))
                 .default_value("5")
-                .takes_value(true),
+                .action(ArgAction::Set),
         )
         .arg(
             Arg::new("config")
                 .help("transcoder(aka ffmpeg) configuration file")
                 .short('c')
                 .required(false)
-                .takes_value(true),
+                .action(ArgAction::Set),
         )
+        .disable_help_flag(true)
+        .arg(Arg::new("help")
+        .long("help")
+        .action(ArgAction::Help))
         .get_matches();
-    let host = matches.value_of("host").unwrap_or_default();
-    let port = matches.value_of("port").unwrap_or_default();
-    let timeout = if let Ok(value) = matches
-        .value_of("timeout")
-        .unwrap_or_default()
-        .parse::<u64>()
+    let host = matches.get_one::<String>("host").unwrap();
+    let port = matches.get_one::<u32>("port").unwrap();
+    let timeout = if let Some(value) = matches
+        .get_one::<u64>("timeout")
     {
         Some(value * 1000000)
     } else {
         panic!("timeout must be an integer");
     };
-    let config = match matches.value_of("config") {
+    let config = match matches.get_one::<String>("config") {
         Some(c) => c.to_owned(),
         None => {
             let path = env::current_exe()
