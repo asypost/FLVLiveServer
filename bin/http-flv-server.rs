@@ -1,4 +1,4 @@
-use clap::{Arg, Command, ArgAction,value_parser};
+use clap::Parser;
 use flv_remuxer::{RemuxManager, TranscoderOptions};
 use hyper::server::conn::AddrStream;
 use hyper::service::{make_service_fn, service_fn};
@@ -19,14 +19,12 @@ use url::Url;
 
 mod remuxer_stream_ext;
 mod allocator;
+mod cli_args;
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type Result<T> = std::result::Result<T, GenericError>;
 
 const STEAM_PATH: &str = "/stream";
-
-
-
 
 #[tokio::main]
 async fn main() {
@@ -37,58 +35,10 @@ async fn main() {
         .with_colors(true)
         .init()
         .unwrap();
-    let matches = Command::new("http-flv-server")
-        .version("0.2")
-        .author("shell <asypost@gmail.com>")
-        .about("tanslate media stream into flv http stream")
-        .arg(
-            Arg::new("host")
-                .short('h')
-                .long("host")
-                .default_value("0.0.0.0")
-                .help("server bind address")
-                .action(ArgAction::Set),
-        )
-        .arg(
-            Arg::new("port")
-                .short('p')
-                .long("port")
-                .default_value("1987")
-                .value_parser(value_parser!(u32))
-                .help("server bind port")
-                .action(ArgAction::Set),
-        )
-        .arg(
-            Arg::new("timeout")
-                .help("transmuxer timeout in seconds")
-                .short('t')
-                .long("timeout")
-                .value_parser(value_parser!(u64))
-                .default_value("5")
-                .action(ArgAction::Set),
-        )
-        .arg(
-            Arg::new("config")
-                .help("transcoder(aka ffmpeg) configuration file")
-                .short('c')
-                .required(false)
-                .action(ArgAction::Set),
-        )
-        .disable_help_flag(true)
-        .arg(Arg::new("help")
-        .long("help")
-        .action(ArgAction::Help))
-        .get_matches();
-    let host = matches.get_one::<String>("host").unwrap();
-    let port = matches.get_one::<u32>("port").unwrap();
-    let timeout = if let Some(value) = matches
-        .get_one::<u64>("timeout")
-    {
-        Some(value * 1000000)
-    } else {
-        panic!("timeout must be an integer");
-    };
-    let config = match matches.get_one::<String>("config") {
+    
+    let cli = cli_args::CliArgs::parse();
+    let timeout =Some(cli.timeout * 1000000);
+    let config = match cli.config {
         Some(c) => c.to_owned(),
         None => {
             let path = env::current_exe()
@@ -131,7 +81,7 @@ async fn main() {
     });
 
     let manager = transmux_manager.clone();
-    let address = format!("{}:{}", &host, &port);
+    let address = format!("{}:{}", &cli.host, &cli.port);
     let address = std::net::SocketAddr::from_str(&address).unwrap();
     let server = run_server(&address, manager);
 

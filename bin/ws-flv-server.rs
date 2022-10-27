@@ -1,7 +1,4 @@
-use clap::value_parser;
-use clap::Arg;
-use clap::ArgAction;
-use clap::Command;
+use clap::Parser;
 use flv_remuxer::RemuxManager;
 use flv_remuxer::TranscoderOptions;
 use futures_util::{SinkExt, StreamExt};
@@ -28,6 +25,7 @@ use tokio_tungstenite::tungstenite::{
 use url::Url;
 
 mod allocator;
+mod cli_args;
 
 #[tokio::main]
 async fn main() {
@@ -38,54 +36,11 @@ async fn main() {
         .with_colors(true)
         .init()
         .unwrap();
-    let matches = Command::new("ws-flv-server")
-        .version("0.2")
-        .author("shell <asypost@gmail.com>")
-        .about("tanslate media stream into flv websocket stream")
-        .arg(
-            Arg::new("host")
-                .short('h')
-                .long("host")
-                .default_value("0.0.0.0")
-                .help("server bind address")
-                .action(ArgAction::Set),
-        )
-        .arg(
-            Arg::new("port")
-                .short('p')
-                .long("port")
-                .default_value("1987")
-                .value_parser(value_parser!(u32))
-                .help("server bind port")
-                .action(ArgAction::Set),
-        )
-        .arg(
-            Arg::new("timeout")
-                .help("transmuxer timeout in seconds")
-                .short('t')
-                .value_parser(value_parser!(u64))
-                .long("timeout")
-                .default_value("5")
-                .action(ArgAction::Set),
-        )
-        .arg(
-            Arg::new("config")
-                .help("transcoder(aka ffmpeg) configuration file")
-                .short('c')
-                .required(false)
-                .action(ArgAction::Set),
-        )
-        .arg(Arg::new("help").long("help").action(ArgAction::Help))
-        .disable_help_flag(true)
-        .get_matches();
-    let host = matches.get_one::<String>("host").unwrap();
-    let port = matches.get_one::<u32>("port").unwrap();
-    let timeout = if let Some(value) = matches.get_one::<u64>("timeout") {
-        Some(value * 1000000)
-    } else {
-        panic!("timeout must be an integer");
-    };
-    let config = match matches.get_one::<String>("config") {
+
+    let cli = cli_args::CliArgs::parse();
+    let timeout =  Some(cli.timeout * 1000000);
+   
+    let config = match cli.config {
         Some(c) => c.to_owned(),
         None => {
             let path = env::current_exe()
@@ -109,7 +64,7 @@ async fn main() {
         log::warn!("Configuration file does not exists");
     }
 
-    let address = format!("{}:{}", &host, &port);
+    let address = format!("{}:{}", &cli.host, &cli.port);
     let listener = TcpListener::bind(&address)
         .await
         .expect("Failed to start server");
