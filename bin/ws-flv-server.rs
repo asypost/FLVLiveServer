@@ -18,8 +18,9 @@ use tokio::{
 };
 use tokio_tungstenite::tungstenite::protocol::WebSocketConfig;
 use tokio_tungstenite::tungstenite::Error;
+use tokio_tungstenite::tungstenite::handshake::server::Response;
 use tokio_tungstenite::tungstenite::{
-    handshake::client::{Request, Response},
+    handshake::client::{Request},
     Message,
 };
 use url::Url;
